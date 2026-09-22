@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""一键推送发版：提交改动 -> 打版本 tag -> 推到 GitHub -> Actions 自动打包并建 Release。
+r"""一键推送发版：提交改动 -> 打版本 tag -> 推到 GitHub -> Actions 自动打包并建 Release。
 
 用法（在 J:\hanhua 目录下）：
     python release.py "本次改了什么"            # 默认 patch 版本号 +1（v1.0.0 -> v1.0.1）
@@ -90,17 +90,30 @@ def main():
     run([git, "push", "origin", branch])
     if local:
         run([sys.executable, "hanhua.py", "build"])
-        exep = HERE + r"\dist\汉化工具.exe"
-        run([gh, "release", "create", tag, exep,
+        import os
+        import shutil
+        src = os.path.join(HERE, "dist", "汉化工具.exe")
+        dst = os.path.join(HERE, "hanhua-tool.exe")
+        shutil.copy2(src, dst)  # GitHub 会剥掉附件名里的中文，固定用英文稳定名
+        run([gh, "release", "create", tag, dst,
              "--title", "汉化工具 通用版 " + tag,
-             "--notes", note + "\n\n下载 汉化工具.exe 双击即用。"])
+             "--notes", note + "\n\n附件 hanhua-tool.exe 即「汉化工具」，下载后双击即用。"])
+        os.remove(dst)
         print("本地发版完成：%s" % tag)
     else:
+        tracked = run([git, "ls-files", ".github/workflows/release.yml"])
         run([git, "tag", tag, "-m", note])
         run([git, "push", "origin", tag])
-        print("已推送 %s（%s 分支 + tag），GitHub Actions 正在自动打包发版" % (tag, branch))
-        print("进度：https://github.com/%s/actions" % repo)
-        print("完成后 Release 会出现在：https://github.com/%s/releases" % repo)
+        if tracked:
+            print("已推送 %s（%s 分支 + tag），GitHub Actions 正在自动打包发版" % (tag, branch))
+            print("进度：https://github.com/%s/actions" % repo)
+        else:
+            print("已推送 %s（%s 分支 + tag）" % (tag, branch))
+            print("⚠ 云端自动构建尚未激活：.github/workflows/release.yml 因令牌缺")
+            print("  workflow 权限还没推上去。先跑一次授权，再把它提交推送：")
+            print("    gh auth refresh -h github.com -s workflow")
+            print("  或本次直接用本机打包发版：python release.py \"%s\" --local" % note)
+        print("Release 页：https://github.com/%s/releases" % repo)
 
 
 if __name__ == "__main__":
