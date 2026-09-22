@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>为谁炼金 · 手动工作台</title>
+<style>
+@@THEME@@
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:14px/1.5 "Segoe UI","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  padding:20px}
+.wrap{max-width:1420px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin-bottom:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),#7b5cff);color:#fff;
+  font-size:20px;font-weight:700;box-shadow:var(--shadow)}
+h1{margin:0;font-size:19px;letter-spacing:.4px}
+.sub{color:var(--dim);font-size:12.5px;margin-top:2px}
+.hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+a.lnk{color:var(--accent);text-decoration:none;font-weight:600;font-size:13px;
+  padding:8px 14px;border-radius:999px;background:var(--panel);
+  border:1px solid var(--line);box-shadow:var(--shadow)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px}
+h2{font-size:14px;margin:0 0 10px}
+.rowhead{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:10px;flex-wrap:wrap}
+.rowhead h2{margin:0}
+.tools{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--dim);
+  flex-wrap:wrap}
+button{font:inherit;font-size:12.5px;padding:5px 13px;border-radius:999px;
+  cursor:pointer;background:var(--panel2);color:var(--text);
+  border:1px solid var(--line)}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+button.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.pri:hover{color:#fff;filter:brightness(1.08)}
+button.warn{border-color:var(--warn);color:var(--warn)}
+input,select,textarea{font:inherit;font-size:13px;color:var(--text);
+  background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+  padding:7px 11px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{width:100%;resize:vertical;line-height:1.55;
+  font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+#q{flex:1;min-width:260px}
+.msg{font-size:12.5px;color:var(--dim);min-height:18px}
+.msg.ok{color:var(--ok)}
+.msg.bad{color:var(--bad)}
+.msg.warn{color:var(--warn)}
+.list{display:flex;flex-direction:column;gap:10px;max-height:64vh;overflow:auto;
+  padding-right:4px}
+.item{border:1px solid var(--line);border-radius:11px;padding:9px 11px;
+  background:var(--panel2)}
+.item.ov{border-color:var(--warn)}
+.item.undone{border-left:3px solid var(--faint)}
+.ih{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.loc{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;
+  color:var(--accent);cursor:pointer}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 8px;
+  font-size:11px;color:var(--dim)}
+.tag.ok{color:var(--ok);border-color:var(--ok)}
+.tag.pend{color:var(--warn);border-color:var(--warn)}
+.tag.sens{color:var(--bad);border-color:var(--bad)}
+.tag.ovt{color:var(--warn);border-color:var(--warn)}
+.tag.out{color:var(--faint)}
+.jp{color:var(--dim);font-size:12.5px;word-break:break-word;margin-bottom:6px}
+.jp i.br,i.br{font-style:normal;color:var(--accent);padding:0 2px;font-weight:700}
+.bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:6px}
+.bar .n{font-size:11.5px;color:var(--faint)}
+.bar .n b{font-variant-numeric:tabular-nums}
+.vs{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:13px}
+.vs label{display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+  user-select:none}
+.empty{color:var(--faint);font-size:12.5px;padding:8px 2px}
+.res{border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+  background:var(--panel2);margin-top:9px}
+.res .rh{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:11.5px;
+  color:var(--dim);margin-bottom:6px}
+.res .out{font-size:14px;font-weight:600;word-break:break-word}
+.res.bad{border-color:var(--bad)}
+.led{display:flex;flex-direction:column;gap:6px;max-height:30vh;overflow:auto}
+.led .r{display:flex;align-items:center;gap:9px;font-size:12.5px;
+  padding:5px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.led .r:last-child{border-bottom:0}
+.led .c{color:var(--dim);flex:1;min-width:160px;word-break:break-word}
+.led .t{color:var(--faint);font-size:11px}
+.foot{color:var(--faint);font-size:12px;text-align:center;margin-top:6px}
+.hint{color:var(--faint);font-size:12px;line-height:1.6}
+.frow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.frow label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;
+  color:var(--dim)}
+.frow input{width:106px;padding:5px 9px}
+.frow select{padding:5px 9px}
+#cfgpre{display:inline-flex;gap:6px;flex-wrap:wrap}
+.txl{font-size:12.5px;color:var(--dim);line-height:1.75}
+.txl b{color:var(--text);font-variant-numeric:tabular-nums}
+.txl code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;
+  color:var(--accent)}
+.accp{margin-bottom:9px}
+.acch{font-size:12.5px;color:var(--dim);margin-bottom:6px;display:flex;
+  gap:8px;align-items:center;flex-wrap:wrap}
+.acch b{color:var(--text);font-variant-numeric:tabular-nums}
+.accl{display:flex;flex-wrap:wrap;gap:7px}
+.acc{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);
+  border-radius:9px;padding:3px 8px;background:var(--panel2);font-size:12px}
+.acc b{font-family:ui-monospace,Consolas,monospace;font-weight:600}
+.acc .k{color:var(--accent);font-size:11px}
+.acc.off{opacity:.6;border-style:dashed}
+.acc.off b{text-decoration:line-through}
+.acc.dead{border-color:var(--bad)}
+.acc.cool{border-color:var(--warn)}
+.acc.extra{border-color:var(--accent)}
+.acc button{padding:1px 8px;font-size:11px}
+.accd{color:var(--bad);font-size:11px;border:1px solid var(--bad);
+  border-radius:999px;padding:0 6px}
+.accw{color:var(--warn);font-size:11px;border:1px solid var(--warn);
+  border-radius:999px;padding:0 6px}
+#acnote{width:110px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">改</div>
+      <div><h1>为谁炼金 · 手动工作台</h1>
+        <div class="sub" id="sub">正在读取…</div></div>
+    </div>
+    <div class="hd">
+      <a class="lnk" href="/">← 进度总览</a>
+      <a class="lnk" href="/live">实时窗口 →</a>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="rowhead">
+      <h2>⓪ 项目（选哪个游戏 · 从哪翻到哪）</h2>
+      <div class="tools">
+        <span class="tag" id="projtag">读取中…</span>
+        <button id="projrel">刷新</button>
+      </div>
+    </div>
+    <div class="hint" style="margin-bottom:10px">
+      一套工具可以伺候好几个汉化项目。每个项目记着：<b>日文源目录</b>（待翻的表）
+      和<b>中文产物目录</b>（翻好的表）。切换项目 = 换这两个目录，术语表、敏感句、
+      改稿台账、翻译缓存也都各归各的，互不干扰。
+    </div>
+    <div class="frow">
+      <label>当前项目 <select id="projsel"></select></label>
+      <button id="projsw">切换</button>
+      <button id="projnew">＋ 新建项目</button>
+      <button class="warn" id="projdel">删除项目</button>
+      <span class="msg" id="projmsg"></span>
+    </div>
+    <div class="frow">
+      <label style="flex:3">日文源目录
+        <input id="projsrc" style="width:100%" placeholder="例如 J:\game\jp">
+      </label>
+      <button id="projbs">浏览…</button>
+    </div>
+    <div class="frow">
+      <label style="flex:3">中文产物目录
+        <input id="projout" style="width:100%" placeholder="留空则用 项目目录/output">
+      </label>
+      <button id="projbo">浏览…</button>
+    </div>
+    <div class="frow">
+      <label>文件匹配 <input id="projpat" style="width:90px" title="只翻哪些文件，如 *.txt"></label>
+      <label>递归子目录 <input id="projrec" type="checkbox"></label>
+      <label>分隔符 <input id="projsep" style="width:60px" title="一般是 TAB"></label>
+      <label>列号(id,原文,cue) <input id="projcols" style="width:110px" title="第几列，从 0 开始；没有 cue 列就填 -1"></label>
+      <button class="pri" id="projsave">保存设置</button>
+    </div>
+    <div class="txl" id="projstat"></div>
+    <div id="dirpick" style="display:none;border:1px solid var(--line);border-radius:8px;padding:8px;margin-top:8px;max-height:260px;overflow:auto">
+      <div class="frow">
+        <button id="dpup">↑ 上级</button>
+        <span class="hint" id="dpdir"></span>
+        <button id="dpclose" style="margin-left:auto">关闭</button>
+      </div>
+      <div id="dplist"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="rowhead">
+      <h2>① 术语表（固定译法，全项目统一）</h2>
+      <div class="tools">
+        <span class="tag" id="gltag">读取中…</span>
+        <button id="glrel">刷新</button>
+      </div>
+    </div>
+    <div class="hint" style="margin-bottom:10px">
+      机翻最烦的不是翻错，是<b>同一个名字前后翻得不一样</b>。术语表把日文原词换成
+      占位符再送翻，翻完换回你指定的中文 —— 引擎没机会自由发挥，所以是硬约束。
+      ⚠ <b>改完术语要点「回溯重翻」</b>：已经翻好的行不会自己变，必须把受影响的行的
+      译文退回原文，引擎下一轮才会用新译名重翻。
+    </div>
+    <div class="frow">
+      <label>日文原词 <input id="gljp" style="width:200px" placeholder="例如 アルケミスト"></label>
+      <label>固定译法 <input id="glcn" style="width:200px" placeholder="例如 炼金术师"></label>
+      <label>备注 <input id="glnote" style="width:140px" placeholder="角色名 / 地名…"></label>
+      <button class="pri" id="glsave">保存这条</button>
+      <span class="msg" id="glmsg"></span>
+    </div>
+    <div class="frow">
+      <button id="glretro">回溯重翻（把受影响的行退回原文）</button>
+      <button id="glretro2">只回溯「译文里还是旧译名」的行</button>
+      <button id="glexp">导出 CSV</button>
+      <button id="glimpbtn">批量导入（CSV：日文,中文,备注）</button>
+    </div>
+    <div id="glimp" style="display:none;margin-top:8px">
+      <textarea id="glimptext" rows="6" style="width:100%;font-family:monospace"
+        placeholder="一行一条，逗号或 TAB 分隔：日文,中文,备注"></textarea>
+      <div class="frow">
+        <button class="pri" id="glimpok">导入（覆盖同名）</button>
+        <button id="glimpadd">追加（保留已有的）</button>
+        <span class="msg" id="glimsg"></span>
+      </div>
+    </div>
+    <div class="txl" id="gllist" style="max-height:420px;overflow:auto"></div>
+  </div>
+
+  <div class="card">
+    <div class="rowhead">
+      <h2>② 引擎调速（并发 · 批次 · 请求频率）</h2>
+      <div class="tools">
+        <span class="tag" id="cfgtag">读取中…</span>
+        <button id="cfgrel">刷新</button>
+      </div>
+    </div>
+    <div class="hint" style="margin-bottom:10px">
+      保存后写进 <code>engine_cfg.json</code>，引擎自己热重载：<b>并发 / 批次</b>最迟一波批次（≈25 秒）生效；
+      <b>换引擎 / 每轮行数</b>下一轮生效。想立刻生效就点「保存并重启引擎」。
+      把「请求间隔」或「每分钟上限」调大 = 少发请求、护号；调小 = 发得更凶。
+    </div>
+    <div class="frow">
+      <label>通道 <select id="cfgeng"></select></label>
+      <label>并发 <input id="cfgw" type="number" min="1" max="64" title="同时在飞的请求数"></label>
+      <label>单请求行数 <input id="cfgl" type="number" min="1" max="200"></label>
+      <label>单请求字符 <input id="cfgch" type="number" min="100" max="20000"></label>
+      <label>每块行数 <input id="cfgb" type="number" min="200" max="100000" title="缓存落盘粒度，也是改配置的生效粒度"></label>
+      <label>每轮行数 <input id="cfgr" type="number" min="100" max="200000"></label>
+      <label>请求间隔 ms <input id="cfgs" type="number" min="0" max="60000" title="两次请求之间最小间隔（全局）"></label>
+      <label>波间暂停 ms <input id="cfgp" type="number" min="0" max="60000"></label>
+      <label>每分钟上限 <input id="cfgrm" type="number" min="0" max="6000" title="0 = 不限"></label>
+    </div>
+    <div class="frow">
+      <span class="hint">预设</span><span id="cfgpre"></span>
+      <button class="pri" id="cfgsave">保存并生效</button>
+      <button id="cfgreset">还原默认</button>
+      <button class="warn" id="cfgrestart">保存并重启引擎</button>
+      <span class="msg" id="cfgmsg"></span>
+    </div>
+    <div class="txl" id="cfgeff"></div>
+  </div>
+
+  <div class="card">
+    <div class="rowhead">
+      <h2>③ 百度账号（停用单个号 · 新增账号）</h2>
+      <div class="tools">
+        <span class="tag" id="acctag">读取中…</span>
+        <button id="accrel">刷新</button>
+        <button id="accallon">全部启用</button>
+      </div>
+    </div>
+    <div class="hint" style="margin-bottom:10px">
+      写进 <code>accounts.json</code>，引擎 <b>1 秒内热重载、不用重启</b>：停掉的号立刻从轮转里摘掉
+      （余额空了一直 54004 的、一直超时的就该停）；新号加进来排最前面先用。
+      <b>同一个 appid 在两个池的 key 不一样</b> —— 通用是短 key，大模型是 <code>_dao</code> 开头那串，各填各的。
+    </div>
+    <div id="accpools"><div class="empty">正在读取…</div></div>
+    <div class="frow" style="margin-top:10px">
+      <input id="acid" placeholder="appid" style="width:180px">
+      <input id="acllm" placeholder="大模型 key（_dao 开头）" style="width:230px">
+      <input id="acstd" placeholder="通用 key（可留空）" style="width:180px">
+      <input id="acnote" placeholder="备注" style="width:110px">
+      <button class="pri" id="accadd">新增 / 改密钥</button>
+      <span class="msg" id="accmsg"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="rowhead">
+      <h2>④ 找行 · 改译文</h2>
+      <div class="tools">
+        <span class="hint">关键字同时搜日文源与中文产物；也可直接填 <code>文件#行号</code></span>
+      </div>
+    </div>
+    <div class="tools" style="margin-bottom:9px">
+      <input id="q" placeholder="关键字，或 EQ_SEISEKI_11_07_a_2d.txt#070">
+      <select id="scope">
+        <option value="all">全部</option>
+        <option value="undone">只看未译</option>
+        <option value="done">只看已译</option>
+        <option value="sens">只看敏感隔离行</option>
+        <option value="ov">只看改过稿的</option>
+      </select>
+      <button class="pri" id="go">搜索</button>
+      <button id="clr">清空</button>
+    </div>
+    <div class="msg" id="mmsg"></div>
+    <div class="list" id="list"></div>
+  </div>
+
+  <div class="card">
+    <div class="rowhead">
+      <h2>⑤ 手动请求台（任意日文，指定通道各发一次）</h2>
+      <div class="tools">
+        <button class="warn" id="allv">全选通道</button>
+        <button id="nov">只留谷歌/腾讯</button>
+      </div>
+    </div>
+    <textarea id="trtext" rows="3" placeholder="粘日文原文…（行内换行写 <br>）"></textarea>
+    <div class="bar">
+      <span class="vs" id="vs"></span>
+      <button class="pri" id="run">发送请求</button>
+      <span class="msg" id="tmsg"></span>
+    </div>
+    <div id="tres"></div>
+  </div>
+
+  <div class="card">
+    <div class="rowhead">
+      <h2>⑥ 已改稿台账</h2>
+      <div class="tools">
+        <span class="hint">引擎轮末写回时以台账为准，所以改过的行不会被冲掉</span>
+        <button id="ref">刷新</button>
+      </div>
+    </div>
+    <div class="led" id="led"></div>
+  </div>
+
+  <div class="foot">改稿会立即写进 chinese/ 产物并登记 manual_ov.json · 手动请求只发一次、不写产物、不占缓存</div>
+</div>
+
+<script>
+var VENDORS = @@VENDORS@@;            // [["auto","自动（…）"], ...] 由面板注入
+var lastTa = null;                    // 最近聚焦过的译文编辑框（手动请求结果可填进去）
+
+function esc(s){
+  return (s||'').replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+function brv(s){                      // 显示用：把 <br> 画成 ⏎
+  return esc(s).replace(/&lt;br\s*\/?&gt;/gi, '<i class="br">\u21b5</i>');
+}
+function nbr(s){ return ((s||'').match(/<br\s*\/?>/gi) || []).length; }
+function msg(id, t, cls){
+  var m = document.getElementById(id);
+  m.className = 'msg ' + (cls || '');
+  m.textContent = t || '';
+}
+function post(body){
+  return fetch('/api/manual', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)}).then(function(r){ return r.json(); });
+}
+function tag(txt, cls){
+  var s = document.createElement('span');
+  s.className = 'tag ' + (cls || '');
+  s.textContent = txt;
+  return s;
+}
+
+/* ---------------------------------------------------------- 搜索与结果行 */
+function search(){
+  var q = document.getElementById('q').value.trim();
+  if(!q){ msg('mmsg', '先填关键字，或 文件#行号', 'bad'); return; }
+  var sc = document.getElementById('scope').value;
+  msg('mmsg', '查询中…');
+  fetch('/api/manual?q=' + encodeURIComponent(q) + '&scope=' + sc,
+        {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.err){ msg('mmsg', d.err, 'bad'); return; }
+      renderList(d);
+      msg('mmsg', '命中 ' + d.total + ' 行 · ' + (d.files||0) + ' 个文件 · '
+          + d.ms + ' ms' + (d.trunc ? ('（只显示前 ' + d.limit + ' 行）') : ''),
+          'ok');
+    })
+    .catch(function(e){ msg('mmsg', '查询失败：' + e, 'bad'); });
+}
+
+function renderList(d){
+  var box = document.getElementById('list');
+  box.innerHTML = '';
+  if(!d.items.length){ box.innerHTML = '<div class="empty">没有匹配的行</div>'; return; }
+  d.items.forEach(function(it){ box.appendChild(mkRow(it)); });
+}
+
+function mkRow(it){
+  var w = document.createElement('div');
+  w.className = 'item' + (it.ov ? ' ov' : '') + (it.done ? '' : ' undone');
+
+  var h = document.createElement('div'); h.className = 'ih';
+  var loc = document.createElement('span'); loc.className = 'loc';
+  loc.textContent = it.file + '#' + it.id;
+  loc.title = '点一下把 文件#行号 填进搜索框';
+  loc.addEventListener('click', function(){
+    document.getElementById('q').value = loc.textContent; search();
+  });
+  h.appendChild(loc);
+  h.appendChild(tag(it.done ? '已译' : '未译', it.done ? 'ok' : 'pend'));
+  if(it.sens) h.appendChild(tag('敏感隔离', 'sens'));
+  if(it.ov) h.appendChild(tag('已改稿', 'ovt'));
+  if(!it.story) h.appendChild(tag('范围外文本', 'out'));
+  if(it.kana) h.appendChild(tag('译文含假名', 'sens'));
+  w.appendChild(h);
+
+  var jp = document.createElement('div');
+  jp.className = 'jp';
+  jp.innerHTML = brv(it.jp || '（日文源里没有这一行）');
+  w.appendChild(jp);
+
+  var ta = document.createElement('textarea');
+  ta.rows = 2;
+  ta.value = it.cn || '';
+  ta.placeholder = it.done ? '' : '（还没译文）';
+  ta.addEventListener('focus', function(){ lastTa = ta; });
+  w.appendChild(ta);
+
+  var bar = document.createElement('div'); bar.className = 'bar';
+  var cnt = document.createElement('span'); cnt.className = 'n';
+  var inb = nbr(it.jp), outb = nbr(ta.value);
+  function paint(){
+    outb = nbr(ta.value);
+    cnt.innerHTML = '原文 &lt;br&gt; <b>' + inb + '</b> · 译文 &lt;br&gt; <b>'
+      + outb + '</b>' + (outb === inb ? '' : ' <span style="color:var(--bad)">不一致</span>');
+  }
+  paint();
+  ta.addEventListener('input', paint);
+  bar.appendChild(cnt);
+
+  var bIns = document.createElement('button');
+  bIns.textContent = '插入 <br>';
+  bIns.addEventListener('click', function(){
+    var p = ta.selectionStart;
+    ta.value = ta.value.slice(0, p) + '<br>' + ta.value.slice(ta.selectionEnd);
+    ta.focus(); ta.selectionStart = ta.selectionEnd = p + 4; paint();
+  });
+  bar.appendChild(bIns);
+
+  var bSave = document.createElement('button');
+  bSave.className = 'pri';
+  bSave.textContent = '保存到产物';
+  bSave.addEventListener('click', function(){ saveRow(it, ta, w, bSave); });
+  bar.appendChild(bSave);
+
+  var sel = document.createElement('select');
+  VENDORS.forEach(function(c){
+    if(c[0] === 'auto') return;
+    var o = document.createElement('option');
+    o.value = c[0]; o.textContent = c[1];
+    sel.appendChild(o);
+  });
+  bar.appendChild(sel);
+
+  var bTr = document.createElement('button');
+  bTr.textContent = '重译此句';
+  bTr.addEventListener('click', function(){
+    if(!it.jp){ msg('mmsg', '这行在日文源里没有原文，没法重译（可手动填）', 'bad'); return; }
+    bTr.disabled = true; bTr.textContent = '请求中…';
+    post({action:'tr', text:it.jp, vendors:[sel.value]}).then(function(r){
+      bTr.disabled = false; bTr.textContent = '重译此句';
+      var x = (r.items || [])[0];
+      if(!x || !x.ok){ msg('mmsg', '重译失败：' + ((x && x.err) || r.err || ''), 'bad'); return; }
+      ta.value = x.out; paint(); ta.focus();
+      msg('mmsg', '已用「' + x.label + '」重译（' + x.ms + ' ms' + (x.nbr_out !== x.nbr_in ? '，⚠ <br> 数不一致' : '') + '）—— 确认后点「保存到产物」', 'warn');
+    }).catch(function(e){ bTr.disabled = false; bTr.textContent = '重译此句';
+      msg('mmsg', '请求失败：' + e, 'bad'); });
+  });
+  bar.appendChild(bTr);
+
+  if(it.ov){
+    var bUn = document.createElement('button');
+    bUn.textContent = '还原';
+    bUn.addEventListener('click', function(){
+      if(!confirm('撤销这行的改稿台账，并把产物还原成改稿前的值？')) return;
+      post({action:'unset', file:it.file, id:it.id}).then(function(r){
+        if(r.ok){
+          ta.value = r.restored || ta.value; paint();
+          w.classList.remove('ov');
+          msg('mmsg', r.note || '已还原', 'ok');
+        } else { msg('mmsg', r.err || '还原失败', 'bad'); }
+      });
+    });
+    bar.appendChild(bUn);
+  }
+  w.appendChild(bar);
+  return w;
+}
+
+function saveRow(it, ta, w, btn){
+  var cn = ta.value.trim();
+  if(!cn){ msg('mmsg', '译文为空 —— 要还原请点「还原」', 'bad'); return; }
+  var a = nbr(it.jp), b = nbr(cn);
+  if(a !== b && !confirm('原文有 ' + a + ' 个 <br>，译文有 ' + b + ' 个。\n'
+      + '换行数不一致会让这句少换一次行，仍要保存？')) return;
+  btn.disabled = true; var old = btn.textContent; btn.textContent = '保存中…';
+  post({action:'set', file:it.file, id:it.id, cn:cn}).then(function(r){
+    btn.disabled = false; btn.textContent = old;
+    if(!r.ok){ msg('mmsg', r.err || '保存失败', 'bad'); return; }
+    ta.value = r.cn;
+    w.classList.add('ov');
+    msg('mmsg', '已保存 ' + it.file + '#' + it.id + '（已写进产物 + 台账）'
+        + (r.kana ? ' ⚠ 译文里还有假名，进度不会算它已译' : ''),
+        r.kana ? 'warn' : 'ok');
+    loadLed();
+  }).catch(function(e){ btn.disabled = false; btn.textContent = old;
+    msg('mmsg', '保存失败：' + e, 'bad'); });
+}
+
+/* ---------------------------------------------------------- 手动请求台 */
+function paintVendors(){
+  var box = document.getElementById('vs');
+  box.innerHTML = '';
+  VENDORS.forEach(function(c){
+    if(c[0] === 'auto') return;
+    var l = document.createElement('label');
+    var i = document.createElement('input');
+    i.type = 'checkbox'; i.value = c[0];
+    i.checked = (c[0] === 'google' || c[0] === 'tencent');
+    l.appendChild(i);
+    l.appendChild(document.createTextNode(c[1]));
+    box.appendChild(l);
+  });
+}
+function pickedVendors(){
+  var v = [];
+  document.querySelectorAll('#vs input:checked').forEach(function(c){ v.push(c.value); });
+  return v;
+}
+function runTr(){
+  var t = document.getElementById('trtext').value.trim();
+  if(!t){ msg('tmsg', '先粘日文原文', 'bad'); return; }
+  var vs = pickedVendors();
+  if(!vs.length){ msg('tmsg', '至少勾一个通道', 'bad'); return; }
+  var btn = document.getElementById('run');
+  btn.disabled = true; btn.textContent = '请求中…';
+  msg('tmsg', '正在发 ' + vs.length + ' 个通道…（百度大模型可能二十秒以上）', 'warn');
+  post({action:'tr', text:t, vendors:vs}).then(function(r){
+    btn.disabled = false; btn.textContent = '发送请求';
+    if(!r.ok){ msg('tmsg', r.err || '失败', 'bad'); return; }
+    msg('tmsg', '完成 ' + r.items.length + ' 个通道 · 原文 <br> × ' + r.br, 'ok');
+    renderTr(r);
+  }).catch(function(e){ btn.disabled = false; btn.textContent = '发送请求';
+    msg('tmsg', '请求失败：' + e, 'bad'); });
+}
+function renderTr(r){
+  var box = document.getElementById('tres');
+  box.innerHTML = '';
+  r.items.forEach(function(x){
+    var d = document.createElement('div');
+    d.className = 'res' + (x.ok ? '' : ' bad');
+    var h = document.createElement('div'); h.className = 'rh';
+    h.appendChild(tag(x.label, x.ok ? 'ok' : 'sens'));
+    h.appendChild(tag(x.ms + ' ms'));
+    if(x.ok) h.appendChild(tag('<br> ' + x.nbr_out + '/' + x.nbr_in,
+                              x.nbr_out === x.nbr_in ? 'ok' : 'pend'));
+    var cp = document.createElement('button');
+    cp.textContent = '复制';
+    cp.addEventListener('click', function(){
+      if(navigator.clipboard) navigator.clipboard.writeText(x.out || '');
+      else { var z = document.createElement('textarea'); z.value = x.out || '';
+             document.body.appendChild(z); z.select(); document.execCommand('copy');
+             z.remove(); }
+      cp.textContent = '已复制';
+      setTimeout(function(){ cp.textContent = '复制'; }, 1200);
+    });
+    h.appendChild(cp);
+    if(lastTa){
+      var bf = document.createElement('button');
+      bf.textContent = '填入上面那个编辑框';
+      bf.addEventListener('click', function(){
+        lastTa.value = x.out || ''; lastTa.focus();
+        msg('mmsg', '已填入（点「保存到产物」才写回）', 'warn');
+      });
+      h.appendChild(bf);
+    }
+    d.appendChild(h);
+    var o = document.createElement('div'); o.className = 'out';
+    o.innerHTML = x.ok ? brv(x.out) : '<span style="color:var(--bad);font-weight:400">'
+      + esc(x.err) + '</span>';
+    d.appendChild(o);
+    box.appendChild(d);
+  });
+}
+
+/* ---------------------------------------------------------- 台账 */
+function loadLed(){
+  fetch('/api/manual?recent=1&limit=40', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var box = document.getElementById('led');
+      box.innerHTML = '';
+      if(!d.items.length){
+        box.innerHTML = '<div class="empty">还没有改过稿</div>'; return; }
+      d.items.forEach(function(x){
+        var r = document.createElement('div'); r.className = 'r';
+        var loc = document.createElement('span'); loc.className = 'loc';
+        loc.textContent = x.file + '#' + x.id;
+        r.appendChild(loc);
+        var c = document.createElement('span'); c.className = 'c';
+        c.innerHTML = brv(x.cn);
+        r.appendChild(c);
+        var t = document.createElement('span'); t.className = 't';
+        t.textContent = x.at ? new Date(x.at * 1000).toLocaleString() : '';
+        r.appendChild(t);
+        var b = document.createElement('button');
+        b.textContent = '打开';
+        b.addEventListener('click', function(){
+          document.getElementById('q').value = x.file + '#' + x.id; search();
+        });
+        r.appendChild(b);
+        box.appendChild(r);
+      });
+    }).catch(function(){});
+}
+
+/* ---------------------------------------------------------- 引擎调速 */
+var CFGMETA = null;
+
+function cfgMsg(t, cls){ msg('cfgmsg', t, cls); }
+function cfgNum(id){ return parseInt(document.getElementById(id).value, 10); }
+
+function loadCfg(){
+  fetch('/api/engine', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok){
+        document.getElementById('cfgtag').textContent = '读不到配置';
+        cfgMsg(d.err || '读取失败', 'bad');
+        return;
+      }
+      paintCfg(d);
+    })
+    .catch(function(e){ cfgMsg('读取失败：' + e, 'bad'); });
+}
+
+function paintCfg(d){
+  var c = d.cfg, meta = d.meta || {};
+  CFGMETA = meta;
+  var es = document.getElementById('cfgeng');
+  es.innerHTML = '';
+  (meta.engines || ['baidu_llm']).forEach(function(e){
+    var o = document.createElement('option');
+    o.value = e;
+    o.textContent = e + (e === c.engine ? '（当前）' : '');
+    es.appendChild(o);
+  });
+  es.value = c.engine;
+  document.getElementById('cfgw').value  = c.workers;
+  document.getElementById('cfgl').value  = c.batch_lines;
+  document.getElementById('cfgch').value = c.batch_chars;
+  document.getElementById('cfgb').value  = c.block_lines;
+  document.getElementById('cfgr').value  = c.round_lines;
+  document.getElementById('cfgs').value  = c.sleep_ms;
+  document.getElementById('cfgp').value  = c.batch_pause_ms;
+  document.getElementById('cfgrm').value = c.max_rpm;
+  var pb = document.getElementById('cfgpre');
+  pb.innerHTML = '';
+  (meta.presets || []).forEach(function(p){
+    var b = document.createElement('button');
+    b.textContent = p.name;
+    b.title = p.desc;
+    b.addEventListener('click', function(){
+      cfgMsg('正在套用「' + p.name + '」…');
+      saveCfg(false, p.values);
+    });
+    pb.appendChild(b);
+  });
+  var lv = d.live || {};
+  if(!d.no_live){
+    document.getElementById('cfgtag').textContent =
+      '引擎' + (lv.engine_running ? '运行中' : '已停止')
+      + ' · 配置改于 ' + (c.updated_at || '—');
+  } else {
+    document.getElementById('cfgtag').textContent = '配置改于 ' + (c.updated_at || '—');
+  }
+  document.getElementById('cfgeff').innerHTML =
+    '当前配置：并发 <b>' + c.workers + '</b> · 单请求 <b>' + c.batch_lines + '</b> 行 / '
+    + c.batch_chars + ' 字符'
+    + (meta.char_cap
+       ? ' <span style="color:' + (c.batch_chars >= meta.char_cap
+           ? 'var(--warn)' : 'var(--dim)') + '">（本通道红线 '
+         + meta.char_cap + '）</span>' : '')
+    + ' · 每块 <b>' + c.block_lines + '</b> 行 · 每轮 '
+    + c.round_lines + ' 行 · 请求间隔 <b>' + c.sleep_ms + '</b> ms · 波间暂停 '
+    + c.batch_pause_ms + ' ms · 每分钟上限 <b>'
+    + (c.max_rpm ? c.max_rpm : '不限') + '</b>'
+    + '<br>配置文件：<code>' + esc(meta.path || '') + '</code>'
+    + '　（直接编辑这个文件也一样生效）';
+}
+
+function collectCfg(){
+  return {engine: document.getElementById('cfgeng').value,
+          workers: cfgNum('cfgw'), batch_lines: cfgNum('cfgl'),
+          batch_chars: cfgNum('cfgch'), block_lines: cfgNum('cfgb'),
+          round_lines: cfgNum('cfgr'), sleep_ms: cfgNum('cfgs'),
+          batch_pause_ms: cfgNum('cfgp'), max_rpm: cfgNum('cfgrm')};
+}
+
+function saveCfg(restart, patch){
+  var body = {action:'save', cfg: patch || collectCfg(), restart: !!restart};
+  cfgMsg('提交中…');
+  fetch('/api/engine', {method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok){ cfgMsg('没保存：' + (d.err || ''), 'bad'); return; }
+      loadCfg();
+      if(d.err){                     // 保存成功，但被通道红线夹过 —— 得说清楚
+        cfgMsg('已保存，注意：' + d.err + '（实际生效值见「当前配置」）', 'warn');
+        return;
+      }
+      cfgMsg('已保存' + (d.msg ? (' · ' + d.msg) : '')
+             + '　并发/批次最迟一波批次生效', 'ok');
+    })
+    .catch(function(e){ cfgMsg('保存失败：' + e, 'bad'); });
+}
+
+/* ---------------------------------------------------------- 百度账号 */
+function accMsg(t, cls){ msg('accmsg', t, cls); }
+
+function loadAcc(){
+  fetch('/api/accounts', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(paintAcc)
+    .catch(function(e){ accMsg('读取失败：' + e, 'bad'); });
+}
+
+function paintAcc(d){
+  var box = document.getElementById('accpools');
+  if(!d || !d.ok){
+    document.getElementById('acctag').textContent = '读不到账号';
+    box.innerHTML = '<div class="empty">' + esc((d && d.err) || '读取失败') + '</div>';
+    return;
+  }
+  document.getElementById('acctag').textContent = '更新于 ' + (d.updated_at || '—');
+  box.innerHTML = '';
+  (d.pools || []).forEach(function(p){
+    var w = document.createElement('div'); w.className = 'accp';
+    var h = document.createElement('div'); h.className = 'acch';
+    h.innerHTML = '<b>' + esc(p.name) + '</b>　可用 <b>' + p.avail + '</b> / ' + p.n
+      + '　<span class="hint">'
+      + (p.kind === 'llm' ? '引擎主力通道' : '繁转简 / 兜底') + '</span>';
+    w.appendChild(h);
+    var l = document.createElement('div'); l.className = 'accl';
+    (p.items || []).forEach(function(i){ l.appendChild(accChip(p.kind, i)); });
+    w.appendChild(l);
+    box.appendChild(w);
+  });
+}
+
+function accChip(kind, i){
+  var s = document.createElement('span');
+  s.className = 'acc ' + (i.off ? 'off' : i.state)
+    + (i.src === 'extra' ? ' extra' : '');
+  s.title = 'appid ' + i.appid + '\nkey 尾 ' + i.key_tail
+    + (i.note ? ('\n备注 ' + i.note) : '')
+    + (i.at ? ('\n加入 ' + i.at) : '')
+    + '\n来源 ' + (i.src === 'extra' ? '后加（可删）' : '源码清单（只能停用）');
+  var b = document.createElement('b'); b.textContent = i.tag;
+  s.appendChild(b);
+  if(i.src === 'extra'){
+    var x = document.createElement('span'); x.className = 'k'; x.textContent = '＋';
+    x.title = '后加的账号'; s.appendChild(x);
+  }
+  if(i.off){
+    var o = document.createElement('span'); o.className = 'accd';
+    o.textContent = '已停用'; s.appendChild(o);
+  } else if(i.state === 'dead'){
+    var dd = document.createElement('span'); dd.className = 'accd';
+    dd.textContent = '错停' + Math.round(i.cool_left / 3600) + 'h'; s.appendChild(dd);
+  } else if(i.state === 'cool'){
+    var cc = document.createElement('span'); cc.className = 'accw';
+    cc.textContent = i.cool_left + 's'; s.appendChild(cc);
+  }
+  var t = document.createElement('button');
+  t.textContent = i.off ? '启用' : '停用';
+  t.addEventListener('click', function(){
+    accAct({action: i.off ? 'on' : 'off', kind: kind, appid: i.appid});
+  });
+  s.appendChild(t);
+  var pt = document.createElement('button'); pt.textContent = '体检';
+  pt.title = '发 20 行真实日文（约 700 字符）试试 —— 短句测不出大批次会不会超时';
+  pt.addEventListener('click', function(){
+    t.disabled = true; pt.disabled = true;
+    accMsg('体检 …' + i.tag + ' …');
+    accAct({action: 'test', kind: kind, appid: i.appid}, true);
+  });
+  s.appendChild(pt);
+  if(i.src === 'extra'){
+    var r = document.createElement('button'); r.textContent = '删';
+    r.className = 'warn';
+    r.addEventListener('click', function(){
+      if(!confirm('删除后加账号 …' + i.tag + '（' + kind + ' 池）？')) return;
+      accAct({action: 'rm', kind: kind, appid: i.appid, pool: kind});
+    });
+    s.appendChild(r);
+  }
+  return s;
+}
+
+function accAct(body, isTest){
+  fetch('/api/accounts', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(isTest){
+        accMsg('体检 …' + (body.appid || '').slice(-4) + '　'
+               + (d.ok ? ('通过 ' + d.ms + 'ms　' + (d.out || ''))
+                       : ('失败：' + (d.err || ''))),
+               d.ok ? 'ok' : 'bad');
+      } else if(!d.ok){
+        accMsg('没做成：' + (d.err || d.msg || ''), 'bad');
+      } else {
+        accMsg(d.msg || '已生效（引擎 1 秒内热重载）', 'ok');
+      }
+      if(d.list) paintAcc(d.list); else loadAcc();
+    })
+    .catch(function(e){ accMsg('请求失败：' + e, 'bad'); loadAcc(); });
+}
+
+function accAdd(){
+  var a  = document.getElementById('acid').value.trim();
+  var lk = document.getElementById('acllm').value.trim();
+  var sk = document.getElementById('acstd').value.trim();
+  var nt = document.getElementById('acnote').value.trim();
+  if(!a){ accMsg('appid 不能为空', 'bad'); return; }
+  if(!lk && !sk){ accMsg('至少要填一个 key', 'bad'); return; }
+  var jobs = [];
+  if(lk) jobs.push({action:'add', appid:a, key:lk, pool:'llm', note:nt});
+  if(sk) jobs.push({action:'add', appid:a, key:sk, pool:'std', note:nt});
+  accMsg('提交中…');
+  Promise.all(jobs.map(function(j){
+    return fetch('/api/accounts', {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify(j)})
+      .then(function(r){ return r.json(); });
+  })).then(function(rs){
+    var bad = rs.filter(function(x){ return !x.ok; });
+    if(bad.length){
+      accMsg((bad[0].err || bad[0].msg || '失败'), 'bad');
+    } else {
+      accMsg(rs.map(function(x){ return x.msg; }).join(' · '), 'ok');
+      ['acid', 'acllm', 'acstd', 'acnote'].forEach(function(id){
+        document.getElementById(id).value = '';
+      });
+    }
+    loadAcc();
+  }).catch(function(e){ accMsg('失败：' + e, 'bad'); });
+}
+
+/* ---------------------------------------------------------- 启动 */
+function loadStat(){
+  fetch('/api/manual?stat=1', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.vendors && d.vendors.length){
+        VENDORS = d.vendors;
+        paintVendors();
+      }
+      document.getElementById('sub').textContent =
+        '产物 ' + d.files + ' 个文件 · 改稿台账 ' + d.ov + ' 条 · 通道 '
+        + VENDORS.length + ' 个';
+    }).catch(function(){
+      document.getElementById('sub').textContent = '面板接口无响应';
+      paintVendors();
+    });
+}
+paintVendors();
+document.getElementById('go').addEventListener('click', search);
+document.getElementById('clr').addEventListener('click', function(){
+  document.getElementById('q').value = '';
+  document.getElementById('list').innerHTML = '';
+  msg('mmsg', '');
+});
+document.getElementById('q').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') search();
+});
+document.getElementById('scope').addEventListener('change', function(){
+  if(document.getElementById('q').value.trim()) search();
+});
+document.getElementById('run').addEventListener('click', runTr);
+document.getElementById('ref').addEventListener('click', loadLed);
+document.getElementById('allv').addEventListener('click', function(){
+  document.querySelectorAll('#vs input').forEach(function(c){ c.checked = true; });
+});
+document.getElementById('nov').addEventListener('click', function(){
+  document.querySelectorAll('#vs input').forEach(function(c){
+    c.checked = (c.value === 'google' || c.value === 'tencent');
+  });
+});
+document.getElementById('trtext').addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)) runTr();
+});
+document.getElementById('accrel').addEventListener('click', loadAcc);
+document.getElementById('accadd').addEventListener('click', accAdd);
+document.getElementById('accallon').addEventListener('click', function(){
+  accAct({action: 'allon'});
+});
+document.getElementById('acid').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') accAdd();
+});
+document.getElementById('cfgrel').addEventListener('click', loadCfg);
+document.getElementById('cfgsave').addEventListener('click', function(){
+  saveCfg(false);
+});
+document.getElementById('cfgreset').addEventListener('click', function(){
+  var eng = document.getElementById('cfgeng').value;
+  cfgMsg('正在取该通道的默认值…');
+  fetch('/api/engine?engine=' + encodeURIComponent(eng), {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok){ cfgMsg('读默认值失败：' + (d.err || ''), 'bad'); return; }
+      saveCfg(false, d.meta.defaults);
+    })
+    .catch(function(e){ cfgMsg('失败：' + e, 'bad'); });
+});
+document.getElementById('cfgrestart').addEventListener('click', function(){
+  if(!confirm('保存并重启翻译引擎？\n\n重启会有几秒空档，当前这一块未译完的行会在下一轮补上。')) return;
+  saveCfg(true);
+});
+document.getElementById('cfgeng').addEventListener('change', function(){
+  cfgMsg('换了通道：并发/批次是各通道一套默认值，点「还原默认」可取新通道的默认值', 'warn');
+});
+/* ------------------------------------------------ 项目（工作区） */
+function projMsg(t, cls){ msg('projmsg', t, cls); }
+
+function loadProj(){
+  fetch('/api/project', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(paintProj)
+    .catch(function(e){ projMsg('读取失败：' + e, 'bad'); });
+}
+
+function paintProj(d){
+  if(!d.ok){ projMsg(d.err || '读取失败', 'bad'); return; }
+  var sel = document.getElementById('projsel');
+  sel.innerHTML = '';
+  (d.list || []).forEach(function(p){
+    var o = document.createElement('option');
+    o.value = p.name; o.textContent = p.name;
+    if(p.name === d.current) o.selected = true;
+    sel.appendChild(o);
+  });
+  var c = (d.list || []).filter(function(p){ return p.name === d.current; })[0] || {};
+  document.getElementById('projsrc').value = c.src_dir || '';
+  document.getElementById('projout').value = c.out_dir || '';
+  document.getElementById('projpat').value = c.pattern || '*.txt';
+  document.getElementById('projrec').checked = !!c.recursive;
+  document.getElementById('projsep').value = (c.sep === '\t') ? '\\t' : (c.sep || '\\t');
+  document.getElementById('projcols').value = (c.cols || [0,1,2]).join(',');
+  var s = d.stat || {};
+  document.getElementById('projtag').textContent =
+    (d.list || []).length + ' 个项目 · 当前 ' + (d.current || '（无）');
+  document.getElementById('projstat').innerHTML = s.ok
+    ? ('文件 <b>' + s.done_files + '/' + s.files + '</b> · 已译 <b>' + s.done
+       + '</b>/' + s.lines + ' 行 · <b>' + s.pct + '%</b>　数据目录：<code>'
+       + esc(d.data_dir || '') + '</code>')
+    : ('<span style="color:var(--bad)">' + esc(s.err || '') + '</span>');
+}
+
+function saveProj(){
+  var sepv = document.getElementById('projsep').value;
+  var cols = (document.getElementById('projcols').value || '0,1,2')
+             .split(',').map(function(x){ return parseInt(x, 10); });
+  projMsg('保存中…');
+  post({action:'update', patch:{
+      src_dir: document.getElementById('projsrc').value.trim(),
+      out_dir: document.getElementById('projout').value.trim(),
+      pattern: document.getElementById('projpat').value.trim() || '*.txt',
+      recursive: document.getElementById('projrec').checked,
+      sep: (sepv === '\\t' || sepv.toLowerCase() === 'tab') ? '\t' : sepv,
+      cols: cols}})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok){ projMsg('没保存：' + (d.err || ''), 'bad'); return; }
+      projMsg('已保存并切换到本项目', 'ok');
+      loadProj(); loadGl(); loadCfg(); loadAcc();
+    })
+    .catch(function(e){ projMsg('保存失败：' + e, 'bad'); });
+}
+
+function switchProj(){
+  var v = document.getElementById('projsel').value;
+  if(!v){ projMsg('先选一个项目', 'bad'); return; }
+  post({action:'switch', name: v})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok){ projMsg('切换失败：' + (d.err || ''), 'bad'); return; }
+      projMsg('已切换到 ' + v, 'ok');
+      loadProj(); loadGl(); loadCfg(); loadAcc(); loadLed();
+    });
+}
+
+function newProj(){
+  var n = prompt('新项目叫什么名字？（建议用游戏名，会成为目录名）');
+  if(!n) return;
+  var s = prompt('日文源目录（待翻的表所在目录）', '');
+  if(s === null) return;
+  post({action:'create', name:n, src_dir:s, out_dir:''})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok){ projMsg('没建成：' + (d.err || ''), 'bad'); return; }
+      projMsg('已新建并切换到 ' + n + '，记得再填产物目录', 'ok');
+      loadProj(); loadGl();
+    });
+}
+
+function delProj(){
+  var v = document.getElementById('projsel').value;
+  if(!v) return;
+  if(!confirm('删除项目「' + v + '」？\n（只删配置与状态文件，产物目录会保留）')) return;
+  post({action:'delete', name:v})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      projMsg(d.ok ? '已删除' : ('失败：' + (d.err||'')), d.ok ? 'ok' : 'bad');
+      loadProj();
+    });
+}
+
+/* 目录选择器：网页拿不到本地目录树，用后端 browse 兜一个 */
+var dpTarget = '';
+function browse(which){
+  dpTarget = which;
+  document.getElementById('dirpick').style.display = 'block';
+  dpBrowse('');
+}
+function dpBrowse(dir){
+  post({action:'browse', dir: dir})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok){ alert(d.err || '打不开'); return; }
+      document.getElementById('dpdir').textContent = d.dir || '（我的电脑）';
+      var box = document.getElementById('dplist');
+      box.innerHTML = '';
+      (d.entries || []).forEach(function(e){
+        if(!e.dir) return;
+        var b = document.createElement('button');
+        b.textContent = e.name;
+        b.style.margin = '2px';
+        b.onclick = function(){ dpBrowse((d.dir ? d.dir + '\\' : '') + e.name); };
+        box.appendChild(b);
+      });
+      var ok = document.createElement('button');
+      ok.className = 'pri';
+      ok.textContent = '用这个目录';
+      ok.style.marginTop = '8px';
+      ok.onclick = function(){
+        document.getElementById(dpTarget).value = d.dir;
+        document.getElementById('dirpick').style.display = 'none';
+      };
+      box.appendChild(ok);
+    });
+}
+
+/* ------------------------------------------------ 术语表 */
+function glMsg(t, cls){ msg('glmsg', t, cls); }
+
+function loadGl(){
+  fetch('/api/glossary', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(paintGl)
+    .catch(function(e){ glMsg('读取失败：' + e, 'bad'); });
+}
+
+function paintGl(d){
+  if(!d.ok){ glMsg(d.err || '读取失败', 'bad'); return; }
+  var it = d.items || [];
+  document.getElementById('gltag').textContent = it.length + ' 条术语';
+  var box = document.getElementById('gllist');
+  if(!it.length){
+    box.innerHTML = '<div class="hint">还没有术语。加一条试试：日文原词 + 你想固定的中文译法。</div>';
+    return;
+  }
+  var h = '<table style="width:100%;border-collapse:collapse;font-size:13px">'
+    + '<tr style="text-align:left;color:var(--dim)"><th>日文原词</th><th>固定译法</th>'
+    + '<th>备注</th><th>启用</th><th></th></tr>';
+  it.forEach(function(i){
+    h += '<tr style="border-top:1px solid var(--line)">'
+      + '<td><code>' + esc(i.jp) + '</code></td>'
+      + '<td><input value="' + esc(i.cn) + '" data-jp="' + esc(i.jp)
+      + '" class="glcn" style="width:180px"></td>'
+      + '<td style="color:var(--dim)">' + esc(i.note) + '</td>'
+      + '<td>' + (i.on ? '是' : '<span style="color:var(--bad)">停用</span>') + '</td>'
+      + '<td><button data-jp="' + esc(i.jp) + '" class="glsave">改</button> '
+      + '<button data-jp="' + esc(i.jp) + '" class="gldel">删</button></td></tr>';
+  });
+  box.innerHTML = h + '</table>';
+  Array.prototype.forEach.call(box.querySelectorAll('.glsave'), function(b){
+    b.onclick = function(){
+      var jp = b.getAttribute('data-jp');
+      var inp = box.querySelector('input[data-jp="' + jp.replace(/"/g, '\\"') + '"]');
+      post({action:'set', jp: jp, cn: inp ? inp.value : ''})
+        .then(function(r){ return r.json(); })
+        .then(function(d2){
+          glMsg(d2.ok ? '已保存（记得点「回溯重翻」）' : ('失败：' + (d2.err||'')),
+                d2.ok ? 'warn' : 'bad');
+          loadGl();
+        });
+    };
+  });
+  Array.prototype.forEach.call(box.querySelectorAll('.gldel'), function(b){
+    b.onclick = function(){
+      if(!confirm('删除术语 ' + b.getAttribute('data-jp') + '？')) return;
+      post({action:'del', jp: b.getAttribute('data-jp')})
+        .then(function(r){ return r.json(); })
+        .then(function(){ loadGl(); });
+    };
+  });
+}
+
+function glSave(){
+  var jp = document.getElementById('gljp').value.trim();
+  var cn = document.getElementById('glcn').value.trim();
+  if(!jp || !cn){ glMsg('日文原词和固定译法都要填', 'bad'); return; }
+  post({action:'set', jp: jp, cn: cn,
+        note: document.getElementById('glnote').value.trim()})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok){ glMsg('失败：' + (d.err||''), 'bad'); return; }
+      glMsg('已保存。若之前翻过含这个词的句子，点「回溯重翻」', 'warn');
+      document.getElementById('gljp').value = '';
+      document.getElementById('glcn').value = '';
+      document.getElementById('glnote').value = '';
+      loadGl();
+    });
+}
+
+function glRetro(scope){
+  glMsg('回溯中…');
+  post({action:'retro', scope: scope})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var x = d.retro || {};
+      glMsg(d.ok ? ('已退回 ' + (x.lines||0) + ' 行 / ' + (x.files||0)
+                    + ' 个文件，引擎下一轮会用新译名重翻')
+                 : ('失败：' + (d.err||'')), d.ok ? 'ok' : 'bad');
+    });
+}
+
+function glExport(){
+  fetch('/api/glossary?export=1', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var s = (d.rows || []).map(function(r){ return r.join(','); }).join('\n');
+      var a = document.createElement('a');
+      a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(s);
+      a.download = 'glossary.csv';
+      a.click();
+    });
+}
+
+function glImport(replace){
+  var raw = document.getElementById('glimptext').value;
+  var rows = raw.split(/\r?\n/).map(function(l){
+    return l.split(/[,\t]/).map(function(x){ return x.trim(); });
+  }).filter(function(r){ return r.length >= 2 && r[0] && r[1]; });
+  if(!rows.length){ msg('glimsg', '没解析出内容', 'bad'); return; }
+  post({action:'import', rows: rows, replace: !!replace})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      msg('glimsg', d.ok ? ('导入 ' + (d.n||0) + ' 条') : ('失败：' + (d.err||'')),
+          d.ok ? 'ok' : 'bad');
+      loadGl();
+    });
+}
+
+loadProj(); loadGl(); loadStat(); loadLed(); loadCfg(); loadAcc();
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# ===== Python 缓存（可重新生成，不入库） =====
+__pycache__/
+*.pyc
+
+# ===== 打包产物 / 二进制 =====
+汉化工具.exe
+*.exe
+dist/
+build/dist/
+
+# ===== 工具根目录的运行态文件（非源码） =====
+_prog_src.json
+_progress_server.log
+_port.txt
+
+# ===== 项目数据目录（含私有游戏路径 / 百度 API key / 译文缓存 / 账号 ID，绝不入库） =====
+projects/_common/
+projects/为谁炼金/
+
+# demo 项目的运行产物（译文、API 调用记录、日志、翻译缓存）—— 配置与示例术语表保留
+projects/demo/output/
+projects/demo/_api_feed.jsonl
+projects/demo/_run.log
+projects/demo/mt_cache.json
+
+# ===== 编辑器 / 系统 =====
+.DS_Store
+Thumbs.db
+*.swp
