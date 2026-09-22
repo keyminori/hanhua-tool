@@ -1231,6 +1231,44 @@ function glImport(replace){
     });
 }
 
+
+/* ---- 项目卡 / 目录选择器 / 术语刷新 事件绑定 ---- */
+document.getElementById('projrel').addEventListener('click', loadProj);
+document.getElementById('projsw').addEventListener('click', switchProj);
+document.getElementById('projnew').addEventListener('click', newProj);
+document.getElementById('projdel').addEventListener('click', delProj);
+document.getElementById('projsave').addEventListener('click', saveProj);
+document.getElementById('projbs').addEventListener('click', function(){ browse('projsrc'); });
+document.getElementById('projbo').addEventListener('click', function(){ browse('projout'); });
+document.getElementById('glrel').addEventListener('click', loadGl);
+document.getElementById('dpup').addEventListener('click', function(){
+  var cur = document.getElementById('dpdir').textContent.trim();
+  if(!cur || cur.indexOf('我的电脑') >= 0) return;
+  if(cur.length <= 3 && cur.slice(-1) === '\\'){ dpBrowse(''); return; }
+  var i = cur.lastIndexOf('\\', cur.length - 2);
+  dpBrowse(i > 0 ? cur.slice(0, i + 1) : '');
+});
+document.getElementById('dpclose').addEventListener('click', function(){
+  document.getElementById('dirpick').style.display = 'none';
+});
+/* 下拉换项目时，把该项目的配置填进输入框（还没保存，只预览） */
+document.getElementById('projsel').addEventListener('change', function(){
+  fetch('/api/project', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok) return;
+      var v = document.getElementById('projsel').value;
+      var c = (d.list || []).filter(function(p){ return p.name === v; })[0] || {};
+      document.getElementById('projsrc').value = c.src_dir || '';
+      document.getElementById('projout').value = c.out_dir || '';
+      document.getElementById('projpat').value = c.pattern || '*.txt';
+      document.getElementById('projrec').checked = !!c.recursive;
+      document.getElementById('projsep').value =
+        (c.sep === '\t') ? '\\t' : (c.sep || '\\t');
+      document.getElementById('projcols').value = (c.cols || [0,1,2]).join(',');
+    });
+});
+
 loadProj(); loadGl(); loadStat(); loadLed(); loadCfg(); loadAcc();
 </script>
 </body>

@@ -27,3 +27,7 @@ projects/demo/mt_cache.json
 .DS_Store
 Thumbs.db
 *.swp
+
+# ===== 修补备份 / 打包中间产物 =====
+*.bak-*
+build/_work/
