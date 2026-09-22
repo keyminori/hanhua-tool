@@ -155,6 +155,11 @@ textarea{width:100%;resize:vertical;line-height:1.55;
       <button class="warn" id="projdel">删除项目</button>
       <span class="msg" id="projmsg"></span>
     </div>
+    <div class="frow" id="projnewf" style="display:none;margin-top:6px">
+      <label>项目名 <input id="projnname" style="width:180px" placeholder="例如：某游戏名"></label>
+      <button class="pri" id="projnok">✓ 创建（用上面填的源/产物目录）</button>
+      <button id="projnno">取消</button>
+    </div>
     <div class="frow">
       <label style="flex:3">日文源目录
         <input id="projsrc" style="width:100%" placeholder="例如 J:\game\jp">
@@ -1016,17 +1021,38 @@ function switchProj(){
 }
 
 function newProj(){
-  var n = prompt('新项目叫什么名字？（建议用游戏名，会成为目录名）');
-  if(!n) return;
-  var s = prompt('日文源目录（待翻的表所在目录）', '');
-  if(s === null) return;
-  post({action:'create', name:n, src_dir:s, out_dir:''})
+  /* 内联表单开关（不用弹窗） */
+  var f = document.getElementById('projnewf');
+  var show = (f.style.display === 'none');
+  f.style.display = show ? '' : 'none';
+  if(show){
+    document.getElementById('projnname').value = '';
+    document.getElementById('projnname').focus();
+    projMsg('填项目名后点「创建」，会用上面填的源/产物目录', 'warn');
+  }
+}
+function newProjOk(){
+  var n = document.getElementById('projnname').value.trim();
+  if(!n){ projMsg('先填项目名', 'bad'); return; }
+  var sepv = document.getElementById('projsep').value;
+  var cols = (document.getElementById('projcols').value || '0,1,2')
+             .split(',').map(function(x){ return parseInt(x, 10); });
+  projMsg('创建中…');
+  post({action:'create', name:n,
+        src_dir: document.getElementById('projsrc').value.trim(),
+        out_dir: document.getElementById('projout').value.trim(),
+        pattern: document.getElementById('projpat').value.trim() || '*.txt',
+        recursive: document.getElementById('projrec').checked,
+        sep: (sepv === '\t' || sepv.toLowerCase() === 'tab') ? '\t' : sepv,
+        cols: cols})
     .then(function(r){ return r.json(); })
     .then(function(d){
       if(!d.ok){ projMsg('没建成：' + (d.err || ''), 'bad'); return; }
-      projMsg('已新建并切换到 ' + n + '，记得再填产物目录', 'ok');
-      loadProj(); loadGl();
-    });
+      document.getElementById('projnewf').style.display = 'none';
+      projMsg('已新建并切换到 ' + n, 'ok');
+      loadProj(); loadGl(); loadCfg(); loadAcc(); loadLed();
+    })
+    .catch(function(e){ projMsg('创建失败：' + e, 'bad'); });
 }
 
 function delProj(){
@@ -1237,6 +1263,10 @@ document.getElementById('projrel').addEventListener('click', loadProj);
 document.getElementById('projsw').addEventListener('click', switchProj);
 document.getElementById('projnew').addEventListener('click', newProj);
 document.getElementById('projdel').addEventListener('click', delProj);
+document.getElementById('projnok').addEventListener('click', newProjOk);
+document.getElementById('projnno').addEventListener('click', function(){
+  document.getElementById('projnewf').style.display = 'none';
+});
 document.getElementById('projsave').addEventListener('click', saveProj);
 document.getElementById('projbs').addEventListener('click', function(){ browse('projsrc'); });
 document.getElementById('projbo').addEventListener('click', function(){ browse('projout'); });

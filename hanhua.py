@@ -376,8 +376,13 @@ def cmd_build(_args=None):
         return
     # 路径全部用绝对：相对路径会被 workpath/specpath 带偏，报找不到文件
     # 不用 --clean：它会整批删 build/_work（几十个文件），触发删除保护把打包拦下来
+    # 游戏图标：assets/game.ico 存在就带上（后续打出的 exe 都有图标）
+    _ico = os.path.join(HERE, 'assets', 'game.ico')
+    _icon_args = ['--icon', _ico] if os.path.isfile(_ico) else []
+
     spec = ['--noconfirm', '--onefile', '--console',
             '--name', '汉化工具',
+            *_icon_args,
             '--paths', CORE, '--paths', UI,
             '--add-data', os.path.join(UI, 'page.html') + os.pathsep + 'ui',
             '--distpath', os.path.join(HERE, 'dist'),
