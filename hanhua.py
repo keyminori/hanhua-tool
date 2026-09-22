@@ -379,10 +379,13 @@ def cmd_build(_args=None):
     # 游戏图标：assets/game.ico 存在就带上（后续打出的 exe 都有图标）
     _ico = os.path.join(HERE, 'assets', 'game.ico')
     _icon_args = ['--icon', _ico] if os.path.isfile(_ico) else []
+    # tkinter 用于选目录弹窗（server.pickdir 函数内 import，静态分析看不到，须显式带上）
+    _tk_args = ['--hidden-import', 'tkinter']
 
     spec = ['--noconfirm', '--onefile', '--console',
             '--name', '汉化工具',
             *_icon_args,
+            *_tk_args,
             '--paths', CORE, '--paths', UI,
             '--add-data', os.path.join(UI, 'page.html') + os.pathsep + 'ui',
             '--distpath', os.path.join(HERE, 'dist'),

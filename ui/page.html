@@ -130,7 +130,7 @@ textarea{width:100%;resize:vertical;line-height:1.55;
         <div class="sub" id="sub">正在读取…</div></div>
     </div>
     <div class="hd">
-      <a class="lnk" href="/">← 进度总览</a>
+      <span class="tag">工作台 v1.0.4</span> <a class="lnk" href="/">← 进度总览</a>
       <a class="lnk" href="/live">实时窗口 →</a>
     </div>
   </header>
@@ -1290,7 +1290,11 @@ document.getElementById('dpup').addEventListener('click', function(){
 function ppost(url, body){
   return fetch(url, {method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(body)});
+      body:JSON.stringify(body)})
+    .catch(function(e){
+      /* 网络断/服务端崩也给出 JSON，UI 永不静默卡住 */
+      return { json: function(){ return {ok:false, err:'请求失败：' + e}; } };
+    });
 }
   var i = cur.lastIndexOf('\\', cur.length - 2);
   dpBrowse(i > 0 ? cur.slice(0, i + 1) : '');

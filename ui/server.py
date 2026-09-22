@@ -83,7 +83,22 @@ SAMPLE_GAP = 8          # 采样间隔（秒）
 
 
 def pickdir():
-    """弹 Windows 原生目录选择框（PowerShell FolderBrowserDialog，无控制台窗口）"""
+    """弹 Windows 原生目录选择框：优先进程内 tkinter（exe 自带），
+    不可用则 subprocess 调 PowerShell FolderBrowserDialog（无控制台窗口）"""
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        d = filedialog.askdirectory(parent=root, title='选择目录',
+                                    mustexist=False) or ''
+        root.destroy()
+        if d and os.path.isdir(d):
+            return {'ok': True, 'dir': os.path.abspath(d)}
+        return {'ok': False, 'err': '未选择目录'}
+    except Exception:
+        pass
     import subprocess
     cmd = ('powershell', '-NoProfile', '-STA', '-NoLogo', '-Command',
            "Add-Type -AssemblyName System.Windows.Forms;"
@@ -2599,35 +2614,39 @@ class H(BaseHTTPRequestHandler):
                 req = {}
         except Exception:
             req = {}
-        if p.startswith('/api/ctl'):
-            res = ctl_act((req.get('what') or 'start').strip(),
-                          (req.get('target') or 'engine').strip())
-        elif p.startswith('/api/mtprobe'):
-            res = mt_probe(force=bool(req.get('force')))
-        elif p.startswith('/api/accounts'):
-            res = accounts_post(req)
-        elif p.startswith('/api/project'):
-            res = project_post(req)
-        elif p.startswith('/api/glossary'):
-            res = glossary_post(req)
-        elif p.startswith('/api/manual'):
-            res = manual_post(req)
-        elif p.startswith('/api/engine'):
-            res = engine_post(req)
-        elif p.startswith('/api/sens'):
-            if (req.get('action') or '') == 'mt':
-                # 手动触发机翻：jp 为空 = 全部待审；force = 连已有草稿的重翻
-                # vendor 指定渠道（google/tencent/bing），空/auto = 自动降级
-                res = sens_mt_fill(force=bool(req.get('force')),
-                                   only=(req.get('jp') or '').strip(),
-                                   vendor=(req.get('vendor') or '').strip())
-            elif not (req.get('jp') or '').strip():
-                res = {'ok': False, 'err': '缺少原文'}
+        try:
+            if p.startswith('/api/ctl'):
+                res = ctl_act((req.get('what') or 'start').strip(),
+                              (req.get('target') or 'engine').strip())
+            elif p.startswith('/api/mtprobe'):
+                res = mt_probe(force=bool(req.get('force')))
+            elif p.startswith('/api/accounts'):
+                res = accounts_post(req)
+            elif p.startswith('/api/project'):
+                res = project_post(req)
+            elif p.startswith('/api/glossary'):
+                res = glossary_post(req)
+            elif p.startswith('/api/manual'):
+                res = manual_post(req)
+            elif p.startswith('/api/engine'):
+                res = engine_post(req)
+            elif p.startswith('/api/sens'):
+                if (req.get('action') or '') == 'mt':
+                    # 手动触发机翻：jp 为空 = 全部待审；force = 连已有草稿的重翻
+                    # vendor 指定渠道（google/tencent/bing），空/auto = 自动降级
+                    res = sens_mt_fill(force=bool(req.get('force')),
+                                       only=(req.get('jp') or '').strip(),
+                                       vendor=(req.get('vendor') or '').strip())
+                elif not (req.get('jp') or '').strip():
+                    res = {'ok': False, 'err': '缺少原文'}
+                else:
+                    res = sens_save(req.get('jp') or '', req.get('cn') or '',
+                                    bool(req.get('unflag')))
             else:
-                res = sens_save(req.get('jp') or '', req.get('cn') or '',
-                                bool(req.get('unflag')))
-        else:
-            res = {'ok': False, 'err': '未知接口'}
+                res = {'ok': False, 'err': '未知接口'}
+
+        except Exception as e:
+            res = {'ok': False, 'err': '服务器内部错误：' + str(e)[:200]}
         self._send(json.dumps(res, ensure_ascii=False).encode('utf-8'),
                    'application/json; charset=utf-8')
 
