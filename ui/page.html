@@ -213,6 +213,10 @@ textarea{width:100%;resize:vertical;line-height:1.55;
       <button id="glimpbtn">批量导入（CSV：日文,中文,备注）</button>
     </div>
     <div id="glimp" style="display:none;margin-top:8px">
+      <div class="frow" style="margin-bottom:6px">
+        <input type="file" id="glimpfile" accept=".csv,.tsv,.txt">
+        <span class="hint">选 CSV/TSV 文件（或直接在下面粘贴），再点导入</span>
+      </div>
       <textarea id="glimptext" rows="6" style="width:100%;font-family:monospace"
         placeholder="一行一条，逗号或 TAB 分隔：日文,中文,备注"></textarea>
       <div class="frow">
@@ -929,6 +933,18 @@ document.getElementById('cfgrestart').addEventListener('click', function(){
 document.getElementById('cfgeng').addEventListener('change', function(){
   cfgMsg('换了通道：并发/批次是各通道一套默认值，点「还原默认」可取新通道的默认值', 'warn');
 });
+/* ------------------------------------------------ 术语表按钮绑定 */
+document.getElementById('glsave').addEventListener('click', glSave);
+document.getElementById('glretro').addEventListener('click', function(){ glRetro('source'); });
+document.getElementById('glretro2').addEventListener('click', function(){ glRetro('translated'); });
+document.getElementById('glexp').addEventListener('click', glExport);
+document.getElementById('glimpbtn').addEventListener('click', function(){
+  var box = document.getElementById('glimp');
+  box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+});
+document.getElementById('glimpfile').addEventListener('change', glImportFile);
+document.getElementById('glimpok').addEventListener('click', function(){ glImport(true); });
+document.getElementById('glimpadd').addEventListener('click', function(){ glImport(false); });
 /* ------------------------------------------------ 项目（工作区） */
 function projMsg(t, cls){ msg('projmsg', t, cls); }
 
@@ -1149,19 +1165,62 @@ function glExport(){
   fetch('/api/glossary?export=1', {cache:'no-store'})
     .then(function(r){ return r.json(); })
     .then(function(d){
-      var s = (d.rows || []).map(function(r){ return r.join(','); }).join('\n');
+      var rows = d.rows || [];
+      var lines = ['日文,中文,备注,启用'];
+      rows.forEach(function(r){
+        var f = [r[0]||'', r[1]||'', r[2]||'', r[3]||''];
+        lines.push(f.map(function(c){
+          return '"' + String(c).replace(/"/g, '""') + '"';
+        }).join(','));
+      });
+      var blob = new Blob(['\ufeff' + lines.join('\r\n')], {type: 'text/csv;charset=utf-8'});
+      var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
-      a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(s);
-      a.download = 'glossary.csv';
-      a.click();
-    });
+      a.href = url; a.download = 'glossary.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+      glMsg('已导出 ' + rows.length + ' 条到 glossary.csv', 'ok');
+    })
+    .catch(function(e){ glMsg('导出失败：' + e, 'bad'); });
+}
+
+function parseCsvLine(l){
+  // 简易 CSV：支持双引号字段、逗号或 TAB 分隔
+  var out = [], cur = '', q = false, i;
+  var sep = (l.indexOf('\t') >= 0 && l.indexOf(',') < 0) ? '\t' : ',';
+  for(i=0;i<l.length;i++){
+    var c = l[i];
+    if(q){
+      if(c === '"'){ if(l[i+1] === '"'){ cur += '"'; i++; } else q = false; }
+      else cur += c;
+    } else {
+      if(c === '"') q = true;
+      else if(c === sep){ out.push(cur); cur = ''; }
+      else cur += c;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+function glImportFile(ev){
+  var f = ev.target.files && ev.target.files[0];
+  if(!f) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    document.getElementById('glimptext').value = reader.result;
+    msg('glimsg', '已读入文件，点「导入」按钮提交', 'warn');
+  };
+  reader.readAsText(f, 'utf-8');
 }
 
 function glImport(replace){
   var raw = document.getElementById('glimptext').value;
-  var rows = raw.split(/\r?\n/).map(function(l){
-    return l.split(/[,\t]/).map(function(x){ return x.trim(); });
+  var rows = raw.split(/\r?\n/).map(parseCsvLine).map(function(r){
+    return r.map(function(x){ return (x||'').trim(); });
   }).filter(function(r){ return r.length >= 2 && r[0] && r[1]; });
+  // 跳过表头（日文,中文,备注,启用）
+  if(rows.length && rows[0][0] === '日文' && rows[0][1] === '中文') rows = rows.slice(1);
   if(!rows.length){ msg('glimsg', '没解析出内容', 'bad'); return; }
   post({action:'import', rows: rows, replace: !!replace})
     .then(function(r){ return r.json(); })
