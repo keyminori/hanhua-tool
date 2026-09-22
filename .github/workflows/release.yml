@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build exe
+        run: python hanhua.py build
+
+      - name: Create release with exe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ($tag -notmatch '^v') { $tag = git describe --tags --abbrev=0 }
+          $src = "dist/汉化工具.exe"
+          if (-not (Test-Path $src)) { $src = "汉化工具.exe" }
+          # GitHub 会剥掉附件名里的非 ASCII 字符，所以附件固定用英文稳定名
+          Copy-Item $src "hanhua-tool.exe" -Force
+          gh release create $tag "hanhua-tool.exe" `
+            --title "汉化工具 通用版 $tag" `
+            --notes "自动构建于 GitHub Actions（tag $tag）。附件 hanhua-tool.exe 即「汉化工具」，下载后双击即用，项目数据建在 exe 旁的 projects 目录。" `
+            || gh release upload $tag "hanhua-tool.exe" --clobber
+          gh release view $tag
