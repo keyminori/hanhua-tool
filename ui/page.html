@@ -992,7 +992,7 @@ function saveProj(){
   var cols = (document.getElementById('projcols').value || '0,1,2')
              .split(',').map(function(x){ return parseInt(x, 10); });
   projMsg('保存中…');
-  post({action:'update', patch:{
+  ppost('/api/project', {action:'update', patch:{
       src_dir: document.getElementById('projsrc').value.trim(),
       out_dir: document.getElementById('projout').value.trim(),
       pattern: document.getElementById('projpat').value.trim() || '*.txt',
@@ -1011,7 +1011,7 @@ function saveProj(){
 function switchProj(){
   var v = document.getElementById('projsel').value;
   if(!v){ projMsg('先选一个项目', 'bad'); return; }
-  post({action:'switch', name: v})
+  ppost('/api/project', {action:'switch', name: v})
     .then(function(r){ return r.json(); })
     .then(function(d){
       if(!d.ok){ projMsg('切换失败：' + (d.err || ''), 'bad'); return; }
@@ -1038,7 +1038,7 @@ function newProjOk(){
   var cols = (document.getElementById('projcols').value || '0,1,2')
              .split(',').map(function(x){ return parseInt(x, 10); });
   projMsg('创建中…');
-  post({action:'create', name:n,
+  ppost('/api/project', {action:'create', name:n,
         src_dir: document.getElementById('projsrc').value.trim(),
         out_dir: document.getElementById('projout').value.trim(),
         pattern: document.getElementById('projpat').value.trim() || '*.txt',
@@ -1059,7 +1059,7 @@ function delProj(){
   var v = document.getElementById('projsel').value;
   if(!v) return;
   if(!confirm('删除项目「' + v + '」？\n（只删配置与状态文件，产物目录会保留）')) return;
-  post({action:'delete', name:v})
+  ppost('/api/project', {action:'delete', name:v})
     .then(function(r){ return r.json(); })
     .then(function(d){
       projMsg(d.ok ? '已删除' : ('失败：' + (d.err||'')), d.ok ? 'ok' : 'bad');
@@ -1070,12 +1070,24 @@ function delProj(){
 /* 目录选择器：网页拿不到本地目录树，用后端 browse 兜一个 */
 var dpTarget = '';
 function browse(which){
+  /* 优先弹 Windows 原生目录选择框；取消/失败再退回网页内选择器 */
+  var el = document.getElementById(which);
+  projMsg('正在打开系统目录选择窗口…');
+  fetch('/api/pickdir', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.ok && d.dir){ el.value = d.dir; projMsg('已选择：' + d.dir, 'ok'); }
+      else{ projMsg(d.err || '未选择目录'); openDp(which); }
+    })
+    .catch(function(){ openDp(which); });
+}
+function openDp(which){
   dpTarget = which;
   document.getElementById('dirpick').style.display = 'block';
   dpBrowse('');
 }
 function dpBrowse(dir){
-  post({action:'browse', dir: dir})
+  ppost('/api/project', {action:'browse', dir: dir})
     .then(function(r){ return r.json(); })
     .then(function(d){
       if(!d.ok){ alert(d.err || '打不开'); return; }
@@ -1139,7 +1151,7 @@ function paintGl(d){
     b.onclick = function(){
       var jp = b.getAttribute('data-jp');
       var inp = box.querySelector('input[data-jp="' + jp.replace(/"/g, '\\"') + '"]');
-      post({action:'set', jp: jp, cn: inp ? inp.value : ''})
+      ppost('/api/glossary', {action:'set', jp: jp, cn: inp ? inp.value : ''})
         .then(function(r){ return r.json(); })
         .then(function(d2){
           glMsg(d2.ok ? '已保存（记得点「回溯重翻」）' : ('失败：' + (d2.err||'')),
@@ -1151,7 +1163,7 @@ function paintGl(d){
   Array.prototype.forEach.call(box.querySelectorAll('.gldel'), function(b){
     b.onclick = function(){
       if(!confirm('删除术语 ' + b.getAttribute('data-jp') + '？')) return;
-      post({action:'del', jp: b.getAttribute('data-jp')})
+      ppost('/api/glossary', {action:'del', jp: b.getAttribute('data-jp')})
         .then(function(r){ return r.json(); })
         .then(function(){ loadGl(); });
     };
@@ -1162,7 +1174,7 @@ function glSave(){
   var jp = document.getElementById('gljp').value.trim();
   var cn = document.getElementById('glcn').value.trim();
   if(!jp || !cn){ glMsg('日文原词和固定译法都要填', 'bad'); return; }
-  post({action:'set', jp: jp, cn: cn,
+  ppost('/api/glossary', {action:'set', jp: jp, cn: cn,
         note: document.getElementById('glnote').value.trim()})
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -1177,7 +1189,7 @@ function glSave(){
 
 function glRetro(scope){
   glMsg('回溯中…');
-  post({action:'retro', scope: scope})
+  ppost('/api/glossary', {action:'retro', scope: scope})
     .then(function(r){ return r.json(); })
     .then(function(d){
       var x = d.retro || {};
@@ -1248,7 +1260,7 @@ function glImport(replace){
   // 跳过表头（日文,中文,备注,启用）
   if(rows.length && rows[0][0] === '日文' && rows[0][1] === '中文') rows = rows.slice(1);
   if(!rows.length){ msg('glimsg', '没解析出内容', 'bad'); return; }
-  post({action:'import', rows: rows, replace: !!replace})
+  ppost('/api/glossary', {action:'import', rows: rows, replace: !!replace})
     .then(function(r){ return r.json(); })
     .then(function(d){
       msg('glimsg', d.ok ? ('导入 ' + (d.n||0) + ' 条') : ('失败：' + (d.err||'')),
@@ -1275,6 +1287,11 @@ document.getElementById('dpup').addEventListener('click', function(){
   var cur = document.getElementById('dpdir').textContent.trim();
   if(!cur || cur.indexOf('我的电脑') >= 0) return;
   if(cur.length <= 3 && cur.slice(-1) === '\\'){ dpBrowse(''); return; }
+function ppost(url, body){
+  return fetch(url, {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)});
+}
   var i = cur.lastIndexOf('\\', cur.length - 2);
   dpBrowse(i > 0 ? cur.slice(0, i + 1) : '');
 });

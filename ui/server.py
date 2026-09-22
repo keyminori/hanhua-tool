@@ -81,6 +81,28 @@ PORT = 8777
 SAMPLE_GAP = 8          # 采样间隔（秒）
 
 
+
+def pickdir():
+    """弹 Windows 原生目录选择框（PowerShell FolderBrowserDialog，无控制台窗口）"""
+    import subprocess
+    cmd = ('powershell', '-NoProfile', '-STA', '-NoLogo', '-Command',
+           "Add-Type -AssemblyName System.Windows.Forms;"
+           "$f=New-Object System.Windows.Forms.FolderBrowserDialog;"
+           "$f.ShowNewFolderButton=$true;"
+           "if($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){"
+           "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;"
+           "[Console]::Out.Write($f.SelectedPath)}")
+    try:
+        r = subprocess.run(cmd, capture_output=True, timeout=600,
+                           creationflags=0x08000000)  # CREATE_NO_WINDOW
+        out = (r.stdout or b'').decode('utf-8', 'replace').strip()
+        if r.returncode == 0 and out and os.path.isdir(out):
+            return {'ok': True, 'dir': out}
+        return {'ok': False, 'err': '未选择目录'}
+    except Exception as e:
+        return {'ok': False, 'err': str(e)[:200]}
+
+
 def bind_project(name=None):
     """切到某个项目：引擎路径、状态文件、面板显示一起换。"""
     global D, JP, CN, RUNLOG, CACHEF, SENSF, SENS_WORDSF, CUR_PROJECT
@@ -2617,6 +2639,10 @@ class H(BaseHTTPRequestHandler):
         elif p.startswith('/api/mtprobe'):
             self._send(json.dumps(mt_probe(force=('force=1' in p)),
                                   ensure_ascii=False).encode('utf-8'),
+                       'application/json; charset=utf-8')
+        elif p.startswith('/api/pickdir'):
+            self._send(json.dumps(pickdir(), ensure_ascii=False)
+                       .encode('utf-8'),
                        'application/json; charset=utf-8')
         elif p.startswith('/api/live'):
             m = re.search(r'after=(\d+)', p)
