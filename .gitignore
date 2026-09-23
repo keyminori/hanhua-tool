@@ -1,0 +1,8 @@
+# 运行时数据（缓存/状态/账号/项目配置）—— 代码与数据分离
+data/
+projects.json
+__pycache__/
+*.pyc
+_patch*.py
+_ref_*.html
+*.zip
